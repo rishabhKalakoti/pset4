@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     
-    if(!atoi(argv[1]))
+    if (!atoi(argv[1]))
     {
         printf("argument 1 must be integer");
         return 1;
@@ -50,16 +50,17 @@ int main(int argc, char* argv[])
     }
 
     // read infile's BITMAPFILEHEADER
-    BITMAPFILEHEADER bf;
-    fread(&bf, sizeof(BITMAPFILEHEADER), 1, inptr);
+    BITMAPFILEHEADER bfHeader;
+    fread(&bfHeader, sizeof(BITMAPFILEHEADER), 1, inptr);
 
     // read infile's BITMAPINFOHEADER
-    BITMAPINFOHEADER bi;
-    fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);
+    BITMAPINFOHEADER biHeader;
+    fread(&biHeader, sizeof(BITMAPINFOHEADER), 1, inptr);
 
     // ensure infile is (likely) a 24-bit uncompressed BMP 4.0
-    if (bf.bfType != 0x4d42 || bf.bfOffBits != 54 || bi.biSize != 40 || 
-        bi.biBitCount != 24 || bi.biCompression != 0)
+    if (bfHeader.bfType != 0x4d42 || bfHeader.bfOffBits != 54 || 
+        biHeader.biSize != 40 || 
+        biHeader.biBitCount != 24 || biHeader.biCompression != 0)
     {
         fclose(outptr);
         fclose(inptr);
@@ -69,29 +70,32 @@ int main(int argc, char* argv[])
     
     
     // copy header initial values
-    int iHeight = bi.biHeight;
-    int iWidth = bi.biWidth;
+    int iHeight = biHeader.biHeight;
+    int iWidth = biHeader.biWidth;
     
     // edit header values
-    bi.biHeight = bi.biHeight * n;
-    bi.biWidth = bi.biWidth * n;
+    biHeader.biHeight = biHeader.biHeight * n;
+    biHeader.biWidth = biHeader.biWidth * n;
     
     // determine padding for scanlines
     int padding =  (4 - (iWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-    int paddingNew = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    int paddingNew = (4 - (biHeader.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
     
-    
-    bi.biSizeImage = (sizeof(RGBTRIPLE) * bi.biWidth + paddingNew) * abs(bi.biHeight);
-    bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+    biHeader.biSizeImage = 
+                            (sizeof(RGBTRIPLE) * biHeader.biWidth + paddingNew)
+                            * abs(biHeader.biHeight);
+    bfHeader.bfSize = 
+                            biHeader.biSizeImage + sizeof(BITMAPFILEHEADER)
+                            + sizeof(BITMAPINFOHEADER);
     
     
     // write outfile's BITMAPFILEHEADER
-    fwrite(&bf, sizeof(BITMAPFILEHEADER), 1, outptr);
+    fwrite(&bfHeader, sizeof(BITMAPFILEHEADER), 1, outptr);
 
     // write outfile's BITMAPINFOHEADER
-    fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
+    fwrite(&biHeader, sizeof(BITMAPINFOHEADER), 1, outptr);
     
-    /*-----------------------------ZAMYLA'S ALGO----------------------------*/
+    /*---------------ZAMYLA'S ALGO---------------*/
     // psuedo-code
     /*
     1.    for each row
@@ -108,49 +112,48 @@ int main(int argc, char* argv[])
         RGBTRIPLE triple;
         for (int k = 0; k < n - 1; k++)                                         
         {
-            /*--------write pixels, padding to the file------------*/
+            /*----write pixels, padding to the file-------*/
             for (int j = 0; j < iWidth; j++)                                        
             {
                 // read RGB triple from infile
                 fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
                 // write RGB triple to outfile
-                for (int l = 0; l < n; l++)                                     
+                for (int varl = 0; varl < n; varl++)                                     
                 {
                     fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
                 }
             }
             // write padding to the outfile
-            for (int l = 0; l < paddingNew; l++)                                
+            for (int varl = 0; varl < paddingNew; varl++)                                
             {
                 fputc(0x00, outptr);
             }
             /*------------send infile cursor back-------------*/
             fseek(inptr, -1 * sizeof(RGBTRIPLE) * iWidth, SEEK_CUR);                 
         }
-        /*-----------------------write pixels, padding to outfile--------------*/
-        for (int j = 0; j < iWidth; j++)                                            
+        /*----write pixels, padding to outfile---------*/
         {
             // read RGB triple from infile
             fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-            /*--------write pixels, padding to the file------------*/
+            /*--------write pixels, padding to the file----------*/
             // write RGB triple to outfile
-            for (int l = 0; l < n; l++)
+            for (int varl = 0; varl < n; varl++)
             {
                 fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
             }
         }
         // write padding to the outfile
-        for (int l = 0; l < paddingNew; l++)
+        for (int varl = 0; varl < paddingNew; varl++)
         {
             fputc(0x00, outptr);
         }
-        /*-----------------------skip over infile padding------------------*/
+        /*----------skip over infile padding------*/
         fseek(inptr, padding, SEEK_CUR);  
         
     }
     
     
-    /*-----------------------------MY ALGO----------------------------*/
+    /*---------MY ALGO------------*/
     /*
     int count = 1;
     for (int i = 0, biHeight = abs(iHeight); i < biHeight;)
