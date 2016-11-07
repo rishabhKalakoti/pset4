@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(int argc, char* argv[])
+int main(void)
 {
     // open card.raw
     FILE* infile = fopen("card.raw", "r");
@@ -19,15 +19,18 @@ int main(int argc, char* argv[])
     char jpeg0[4] = {0xff, 0xd8, 0xff, 0xe0};
     char jpeg1[4] = {0xff, 0xd8, 0xff, 0xe1};
     char firstchk[4];
+    
     fread(firstchk, 1, 4, infile);
-    while((memcmp(firstchk, jpeg0, 4) || 
-        memcmp(firstchk, jpeg1, 4)) && firstchk[3]!=EOF)
+    while(!(firstchk[0] == jpeg0[0] && 
+        firstchk[1] == jpeg0[1] && 
+        firstchk[2] == jpeg0[2] && 
+        (firstchk[3] == jpeg0[3] || 
+        firstchk[3] == jpeg1[3])) && firstchk[3] != EOF)
     {
         fseek(infile, -3, SEEK_CUR);
         fread(firstchk, 1, 4, infile);
     }
     fseek(infile, -1, SEEK_CUR);
-    
     
     // open new jpeg
     char buffer[512];
@@ -39,13 +42,19 @@ int main(int argc, char* argv[])
     FILE* outfile;
     do
     {
-        if((buffer[0] == jpeg0[0] && buffer[1] == jpeg0[1] && buffer[2] == jpeg0[2] && buffer[3] == jpeg0[3]) || 
-        (buffer[0] == jpeg1[0] && buffer[1] == jpeg1[1] && buffer[2] == jpeg1[2] && buffer[3] == jpeg1[3]))
+        // write 512 bytes until a new jpeg is detected
+        if (buffer[0] == jpeg0[0] && buffer[1] == jpeg0[1] && 
+        buffer[2] == jpeg0[2] && (buffer[3] == jpeg0[3] || 
+        buffer[3] == jpeg1[3]))
         {
             if (flag == 0)
+            {
                 flag = 1;
+            }
             else
+            {
                 fclose(outfile);
+            }
             
             char fname[8];
             sprintf(fname, "%03d.jpg", filecount);
@@ -54,9 +63,9 @@ int main(int argc, char* argv[])
         }
         
         fwrite(buffer, 1, 512, outfile);
-    // write 512 bytes until a new jpeg is detected
+        // find end of file
     }while(fread(buffer, 1, 512, infile) == 512);
-    // find end of file
+    
     fclose(outfile);
     fclose(infile);
     
