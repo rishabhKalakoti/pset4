@@ -21,12 +21,12 @@ int main(void)
     }
     
     // detect the first jpeg
-    char jpeg0[5] = {0xff, 0xd8, 0xff, 0xe0, 0xef};
+    unsigned char jpeg0[5] = {0xff, 0xd8, 0xff, 0xe0, 0xef};
     
     // open new jpeg
-    char buffer[512];
+    unsigned char buffer[512];
     
-    fread(buffer, 1, 512, infile);
+    fread(&buffer, 1, 512, infile);
     
     int filecount = 0;
     int flag = 0;
@@ -34,7 +34,8 @@ int main(void)
     do
     {
         // write 512 bytes until a new jpeg is detected
-        if (buffer[0] == jpeg0[0] && buffer[1] == jpeg0[1] && 
+        if (buffer[0] == jpeg0[0] && 
+            buffer[1] == jpeg0[1] && 
             buffer[2] == jpeg0[2] && 
             (buffer[3] >= jpeg0[3] && 
             buffer[3] <= jpeg0[4]))
@@ -53,9 +54,12 @@ int main(void)
             filecount++;
         }
         
-        fwrite(buffer, 512, 1, outfile);
+        if (!(flag == 0))
+        {
+            fwrite(&buffer, 512, 1, outfile);
+        }
         // find end of file
-    }while(fread(buffer, 1, 512, infile) == 512);
+    }while(fread(&buffer, 1, 512, infile) == 512);
     
     fclose(outfile);
     fclose(infile);
