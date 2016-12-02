@@ -1,19 +1,19 @@
-0.  TODO
-1.  TODO
-2.  TODO
-3.  TODO
-4.  TODO
-5.  TODO
-6.  TODO
-7.  TODO
-8.  TODO
-9.  TODO
-10. TODO
-11. TODO
-12. TODO
-13. TODO
-14. TODO
-15. TODO
-16. TODO
-17. TODO
+0.  BMP: over 4 billion, GIF: 8 bits, 256 colors, JPEG: over 16 million, PNG: 16 million.
+1.  GIF
+2.  Lossy compressions discard some data, so the exact original file can never be recovered, whereas  in lossless compression, exact file can be recovered as no data is discarded.
+3.  JPEG
+4.  The FAT system deletes the reference of the file from the crrent directory and adds it's space in the list of free memory.
+5.  Use tools that clean the free memory of the hard drive.
+6.  stdint.h is a header file in the C standard library to allow programmers to write more portable code by providing a set of typedefs that specify exact-width integer types, together with the defined minimum and maximum allowable values for each type, using macros.
+7.  You know the exact size of memory allocated irrespective of the type of system used.
+8.  1, 4, 4, 2
+9.  0x42 0x4D
+10. biSizeImage is the whole image size, bfSize is the same, but you have to add the size of the 2 header files.
+11. If biHeight is negative, indicating a top-down DIB and its origin is the upper-left corner.
+12. biBitCount
+13. That file does not already exist and has to be made, that is why NULL is returned.
+14. It is the number of times the specifies size of block of memory has to be read. As the memory to be read has been decalared in the second argument we need to read just one suck memory block at a time.
+15. In a bmp, the width is to be read in multiples of 4, that's why it's necessary to add padding if the width is 3.
+16. fseek is used to move the cursor to a different part of the file for reading/writing.
+17. SEEK_CUR is an argument of fseek which declares that we specify the position from whicch to move cursor to the current position of the cursor.
 18. Rick Astley
