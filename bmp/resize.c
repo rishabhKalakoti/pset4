@@ -6,7 +6,8 @@
  *
  * Copies a BMP piece by piece, just because.
  */
-       
+ 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -95,6 +96,9 @@ int main(int argc, char* argv[])
     // write outfile's BITMAPINFOHEADER
     fwrite(&biHeader, sizeof(BITMAPINFOHEADER), 1, outptr);
     
+    
+    
+    
     /*---------------ZAMYLA'S ALGO---------------*/
     // psuedo-code
     /*
@@ -106,98 +110,58 @@ int main(int argc, char* argv[])
     6.        skip over infile padding
     */
     
-    for (int i = 0, biHeight = abs(iHeight); i < biHeight; i++)                 
+    for (int i = 0, biHeight = abs(iHeight); i < biHeight; i++)                
     {
-        
+        int j;
+        // temporary storage
         RGBTRIPLE triple;
-        for (int k = 0; k < n - 1; k++)                                         
+        for (int k = 0; k < n - 1; k++)                                        
         {
-            /*----write pixels, padding to the file-------*/
-            for (int j = 0; j < iWidth; j++)                                        
+            /*--------write pixels, padding to the file------------*/
+            for (j = 0; j < iWidth; j++)                                       
             {
                 // read RGB triple from infile
                 fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+    
                 // write RGB triple to outfile
-                for (int varl = 0; varl < n; varl++)                                     
+                for (int l = 0; l < n; l++)                                     
                 {
                     fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
                 }
             }
             // write padding to the outfile
-            for (int varl = 0; varl < paddingNew; varl++)                                
+            for (int l = 0; l < paddingNew; l++)                                
             {
                 fputc(0x00, outptr);
             }
             /*------------send infile cursor back-------------*/
-            fseek(inptr, -1 * sizeof(RGBTRIPLE) * iWidth, SEEK_CUR);                 
+            fseek(inptr, -1 * sizeof(RGBTRIPLE) * j, SEEK_CUR);                
         }
-        /*----write pixels, padding to outfile---------*/
+        /*-----------------------write pixels, padding to outfile--------------*/
+        for (j = 0; j < iWidth; j++)                                           
         {
+    
             // read RGB triple from infile
             fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-            /*--------write pixels, padding to the file----------*/
+    
+    
+            /*--------write pixels, padding to the file------------*/
             // write RGB triple to outfile
-            for (int varl = 0; varl < n; varl++)
+            for (int l = 0; l < n; l++)
             {
                 fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
             }
         }
         // write padding to the outfile
-        for (int varl = 0; varl < paddingNew; varl++)
-        {
-            fputc(0x00, outptr);
-        }
-        /*----------skip over infile padding------*/
-        fseek(inptr, padding, SEEK_CUR);  
-        
-    }
-    
-    
-    /*---------MY ALGO------------*/
-    /*
-    int count = 1;
-    for (int i = 0, biHeight = abs(iHeight); i < biHeight;)
-    {
-        int j;
-        // iterate over pixels in scanline
-        for (j = 0; j < iWidth; j++)
-        {
-            // temporary storage
-            RGBTRIPLE triple;
-
-            // read RGB triple from infile
-            fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-            
-            // write RGB triple to outfile
-            
-            for (int k = 0; k < n; k++)
-            {
-                fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
-            }
-        }
-        // skip over padding, if any
-        // fseek(inptr, padding, SEEK_CUR);
-        
-        // add back new padding
         for (int l = 0; l < paddingNew; l++)
         {
             fputc(0x00, outptr);
         }
-        
-        if(!(count % n == 0))   //n==3
-        {
-            fseek(inptr, -1 * sizeof(RGBTRIPLE) * j, SEEK_CUR);
-        }
-        else
-        {
-            fseek(inptr, padding, SEEK_CUR);
-            count = 0;
-            i++;
-        }
-        count++;
+        /*-----------------------skip over infile padding------------------*/
+        fseek(inptr, padding, SEEK_CUR);                                        
     }
-    */
-
+    
+    
     // close infile
     fclose(inptr);
 
